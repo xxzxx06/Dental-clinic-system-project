@@ -1,0 +1,296 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+//#include <iomanip>
+
+using namespace std;
+
+// Define Patient struct to hold patient information
+struct Patient {
+    string name;
+    string dob;
+    string gender;
+    string phone;
+    int procedure;
+};
+
+// Define Node struct to hold patient and next node in queue
+struct Node {
+    Patient data;
+    Node* next;
+};
+
+// Define StackNode struct to hold patient and next node in stack
+struct StackNode {
+    Patient data;
+    StackNode* next;
+};
+
+// Define head and tail pointers for queue, and top pointer for stack
+Node* head = NULL;
+Node* tail = NULL;
+StackNode* top = NULL;
+
+// Add patient to the end of the queue
+void enqueue(Patient p)
+{
+    Node* newNode = new Node;
+    newNode->data = p;
+    newNode->next = NULL;
+    if (head == NULL)
+    {
+        head = newNode;
+        tail = newNode;
+    }
+    else {
+        tail->next = newNode;
+        tail = newNode;
+    }
+}
+void get_procedure()
+{
+    cout <<   "------------------------------------------------" << endl;
+
+    cout << "        1- Dental cleaning $150" << endl;
+    cout << "        2- Dental filling $200" << endl;
+    cout << "        3- Tooth  extraction $280" << endl;
+    cout << "        4- Orthodontics $5000" << endl;
+    cout << "        5- A dental prosthesis is $900" << endl;
+    cout << endl<< "--------------------------------------------------" << endl;
+}
+// Add patient to the queue
+void addPatient()
+{
+    Patient p;
+    int num;
+
+    cout << "Enter name: ";
+    getline(cin, p.name);
+    cout << "Enter date of birth: ";
+    getline(cin, p.dob);
+    cout << "Enter gender: ";
+    getline(cin, p.gender);
+    cout << "Enter phone number: ";
+    getline(cin, p.phone);
+
+    // Display procedure options and get user input
+
+    get_procedure();
+
+    cout << endl<<"        Select Procedure : " ; cin >> num;
+   
+    
+
+    // Set procedure cost based on user input
+    switch (num)
+    {
+    case 1:
+        p.procedure = 150;
+        break;
+    case 2:
+        p.procedure = 200;
+        break;
+    case 3:
+        p.procedure = 280;
+        break;
+    case 4:
+        p.procedure = 5000;
+        break;
+    case 5:
+        p.procedure = 900;
+        break;
+    default:
+        cout << "erorr" << endl;
+    }
+
+    cout << "**************" << endl;
+    cout << "  your name is: " << p.name << endl;
+    cout << "  your age is: " << p.dob << endl;
+    cout << "  your gender is: " << p.gender << endl;
+    cout << "  your phone number: " << p.phone << endl;
+    //cout << "**************" << endl;
+    // Add patient information to file
+    ofstream outfile;
+    outfile.open("patients.txt", ios::app);
+    outfile << p.name << endl;
+    outfile << p.dob << endl;
+    outfile << p.gender << endl;
+    outfile << p.phone << endl;
+    outfile << p.procedure << endl;
+    outfile.close();
+
+    // Add patient to the end of the queue
+    enqueue(p);
+}
+
+// Display list of patients from file
+void displayPatients() {
+    ifstream infile;
+    infile.open("patients.txt");
+
+    string line;
+    int count = 0;
+
+    while (getline(infile, line)) {
+        cout << line << endl;
+        count++;
+        if (count % 5 == 0) {
+            cout << endl;
+        }
+    }
+
+    infile.close();
+}
+
+// Remove patient from the beginning of the queue and add to top of stack
+void dequeue() {
+    if (head == NULL) {
+        cout << "No patients in queue" << endl;
+        return;
+    }
+
+    // Remove patient from queue
+    Node* temp = head;
+    head = head->next;
+
+    // Push dequeued patient onto stack
+    StackNode* stackNode = new StackNode;
+    stackNode->data = temp->data;
+    stackNode->next = top;
+    top = stackNode;
+
+    // Remove patient information from file
+    fstream file;
+    file.open("patients.txt", ios::in);
+
+    string line;
+
+    vector<string> lines;
+    while (getline(file, line)) {
+        if (line == temp->data.name) {
+            // Skip over this patient's information
+            for (int i = 0; i < 4; i++) {
+                getline(file, line);
+            }
+        }
+        else {
+            lines.push_back(line);
+        }
+    }
+    file.close();
+
+
+    // Rewrite file without removed patient's information
+    file.open("patients.txt", ios::out | ios::trunc);
+    for (string l : lines) {
+        file << l << endl;
+    }
+    file.close();
+
+    // Display name of removed patient
+    cout << "Removing patient: " << temp->data.name << endl;
+
+    delete temp;
+}
+
+// Sum the cost of all procedures in the stack
+void sumProcedures() {
+    int total = 0;
+    StackNode* current = top;
+    while (current != NULL) {
+        total += current->data.procedure;
+        current = current->next;
+    }
+    cout << "Total procedure cost: $" << total << endl;
+}
+
+// Display menu options and get user input
+void displayMenu() {
+   
+    cout <<endl<< "1- Add Patient" << endl;
+    cout << "2- List of Patients" << endl;
+    cout << "3- Remove Next Patient" << endl;
+    cout << "4- Sum of Procedure Costs" << endl;
+    cout << "5- Exit" << endl;
+    cout << "--------------------------------------------" << endl;
+}
+
+int main() {
+    cout << "\n\n";
+            cout << "       /\\     " << endl;
+            cout << "      /  \\    " << endl;
+            cout << "     /    \\   " << endl;
+            cout << "    /      \\  " << endl;
+            cout << "   /        \\ " << endl;
+            cout << "  /____\\" << endl;
+            cout << "  |          |" << endl;
+            cout << "  |  Dental  |" << endl;
+            cout << "  |  Cliinic |" << endl;
+            cout << "  |    App   |" << endl;
+            cout << "  |____|" << endl;
+            cout << endl;
+    
+    int choice, numPatients = 0;
+    do {
+        displayMenu();
+        cout << "Enter choice: ";
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+        case 1:
+            addPatient();
+            numPatients++;
+            cout << "         _______             " << endl;
+            cout << "\n     Patient added successfully .    " << endl;
+            cout << "         _______             " << endl;
+          
+            break;
+        case 2:
+            cout << endl <<"  The number of patients in the clinic =  " << numPatients  << endl;
+            displayPatients();
+            break;
+        case 3:
+            dequeue();
+            numPatients--;
+            break;
+        case 4:
+            sumProcedures();
+            break;
+        case 5:
+
+            cout <<endl<< "           *********         " << endl;
+
+            cout <<  endl<<"*** Thank you for visiting our clinc ***" << endl;
+
+            cout << endl<< "           *********         " << endl;
+           
+            // Remove all patients from queue before exiting
+            for (int i = 0; i < numPatients; i++) {
+                dequeue();
+            }
+            break;
+        default:
+            cout << "Invalid choice" << endl;
+            break;
+        }
+    } while (choice != 5);
+
+    // Free memory used by queue 
+    Node* current = head;
+    while (current != NULL) {
+        Node* temp = current;
+        current = current->next;
+        delete temp;
+    }
+    // Free memory used by stack
+    StackNode* currentStack = top;
+    while (currentStack != NULL) {
+        StackNode* tempStack = currentStack;
+        currentStack = currentStack->next;
+
+
+        return 0;
+    }
+}
